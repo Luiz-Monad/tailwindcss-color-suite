@@ -21,7 +21,6 @@ export default defineConfig({
     lib: {
       entry: './src/app.main.ts',
       name: 'ColorSuiteEditorApp',
-      formats: ['es', 'cjs']
     },
     rollupOptions: {
       output: [

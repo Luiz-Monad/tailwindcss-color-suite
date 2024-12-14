@@ -1,7 +1,7 @@
 import { Connect, ViteDevServer } from 'vite'
 import { ColorSuiteConfig } from '../types'
 import { ServerResponse } from 'http'
-import { json } from 'body-parser'
+import body_parser from 'body-parser'
 import { join } from 'path'
 import { URL } from 'url'
 import { promises as fs } from 'fs'
@@ -11,7 +11,7 @@ import { UpdateSettingsForm } from '../editor/services/settings'
 import { inspect } from 'util'
 import { UpdateColorForm } from '../editor/services/color/forms';
 
-const bodyParser = json()
+const bodyParser = body_parser.json()
 const parseBody = <T={[key:string]:any}>(req:Connect.IncomingMessage, res:ServerResponse):Promise<T> => new Promise((resolve, reject) => {
   try {
     bodyParser(req, res, resolve)
@@ -23,8 +23,15 @@ const parseBody = <T={[key:string]:any}>(req:Connect.IncomingMessage, res:Server
 	return (req as any).body
 })
 
-export function createColorSuiteServer(server:ViteDevServer, color_config:ColorSuiteConfig, color_config_path:string) {
+export function createColorSuiteServer(server:ViteDevServer, get_color_config:Promise<ColorSuiteConfig>, color_config_path:string) {
+	let instance_color_config:ColorSuiteConfig | null = null
+	async function color_config_promise() {
+		if (!instance_color_config) instance_color_config = await get_color_config
+		return instance_color_config
+	}
+
 	async function saveConfig(reload:boolean = false) {
+		const color_config = await color_config_promise()
 		await fs.writeFile(color_config_path, `module.exports = ${ inspect(color_config, false, Infinity) }`)
 
 		let config_module = server.moduleGraph.getModuleById(COLOR_CONFIG_ID)
@@ -44,6 +51,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config:ColorS
 
 	// Create color
 	server.middlewares.use(COLOR_CREATE_PATH, async (req, res, next) => {
+		const color_config = await color_config_promise()
 		try {
 			const body = await parseBody<CreateColorForm>(req, res)
 			if (!body || Object.keys(body).length == 0) throw new Error('No data provided.')
@@ -64,6 +72,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config:ColorS
 
 	// Update color
 	server.middlewares.use(COLOR_UPDATE_PATH, async (req, res, next) => {
+		const color_config = await color_config_promise()
 		try {
 			const body = await parseBody<UpdateColorForm>(req, res)
 			if (!body || Object.keys(body).length == 0) throw new Error('No data provided.')
@@ -92,6 +101,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config:ColorS
 
 	// Update all colors
 	server.middlewares.use(COLOR_UPDATE_ALL_PATH, async (req, res, next) => {
+		const color_config = await color_config_promise()
 		try {
 			const body = await parseBody<UpdateColorForm>(req, res)
 			if (!body || Object.keys(body).length == 0) throw new Error('No data provided.')
@@ -127,6 +137,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config:ColorS
 
 	// Delete color
 	server.middlewares.use(COLOR_DELETE_PATH, async (req, res, next) => {
+		const color_config = await color_config_promise()
 		try {
 			let url:URL, token:string|null
 			try {
@@ -155,6 +166,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config:ColorS
 
 	// Update Settings
 	server.middlewares.use(SETTINGS_UPDATE_PATH, async (req, res, next) => {
+		const color_config = await color_config_promise()
 		try {
 			const body = await parseBody<UpdateSettingsForm>(req, res)
 			if (!body || Object.keys(body).length == 0) throw new Error('No data provided.')
