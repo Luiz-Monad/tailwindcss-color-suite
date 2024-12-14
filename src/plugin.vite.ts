@@ -6,7 +6,7 @@ import { inspect } from 'util'
 import { join, isAbsolute } from 'path'
 import { pathToFileURL } from 'url'
 import { createColorSuiteServer } from './server/index'
-import { getDefaultsFromTailwind, resolveColorConfig } from './utils'
+import { getDefaultsFromTailwind, resolveColorConfig, dynamicRequire } from './utils'
 
 export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
   const DEFAULTS_WITH_COLORS = Object.assign({}, DEFAULT_COLOR_CONFIG, {
@@ -19,7 +19,7 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
   const color_config_promise = async () => {
     let color_config:ColorSuiteConfig
     try {
-      color_config = await import(pathToFileURL(color_config_path).href)
+      color_config = await dynamicRequire(color_config_path)
     } catch(e) {
       // There was a problem requiring the color config
       if (existsSync(color_config_path)) {
@@ -94,9 +94,8 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
     },
     async handleHotUpdate({ file, server }) {
       if (file.match(/colors\.config\.js/g)) {
-        let url = pathToFileURL(color_config_path)
-        url.search = `?t=${Date.now()}`
-        let color_config:ColorSuiteConfig = await import(url.href) // re-require
+        // bundleRequire already does cachebusting
+        let color_config:ColorSuiteConfig = await dynamicRequire(color_config_path)
         color_config = Object.assign(DEFAULTS_WITH_COLORS, color_config) // make sure we've got all defaults
 
         let config_module = server.moduleGraph.getModuleById(COLOR_CONFIG_ID)

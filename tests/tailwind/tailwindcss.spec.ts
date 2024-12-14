@@ -50,14 +50,14 @@ describe('Tailwind CSS color configuration', () => {
 
 		it('should generate background color utilities for all non-color CSS values when the object is given to Tailwind', () => {
 			const output = `
-				.bg-transparent {
-					background-color: transparent;
-				}
 				.bg-current {
 					background-color: currentColor;
 				}
 				.bg-inherit {
 					background-color: inherit;
+				}
+				.bg-transparent {
+					background-color: transparent;
 				}
 			`
 
