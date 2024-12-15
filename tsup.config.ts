@@ -9,6 +9,9 @@ export const tsup: Options = {
   minify: false,
   format: ['cjs', 'esm'],
   entryPoints: ['src/index.ts'],
+  noExternal: [
+    'tailwindcss/colors',
+  ],
   esbuildPlugins: [
     commonjs({
       ignore: (path) => !(module.builtinModules.includes(path) || path.startsWith('node:'))
