@@ -5,6 +5,10 @@ import { Config as TailwindConfig } from 'tailwindcss'
 import { tailwindColors } from '../../src'
 import { ColorSuiteColors } from '../../src/types'
 
+jest.mock("../../src/config.ts", () => ({
+	isESM: () => false,
+}));
+
 function configureColors(colors:ColorSuiteColors) {
 	return {
 		colors,

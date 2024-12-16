@@ -8,8 +8,8 @@ import { promises as fs } from 'fs'
 import { COLOR_CREATE_PATH, SETTINGS_UPDATE_PATH, COLOR_CONFIG_ID, SETTINGS_CONFIG_ID, COLOR_UPDATE_PATH, COLOR_DELETE_PATH, COLOR_UPDATE_ALL_PATH } from '../constants'
 import { CreateColorForm } from '../editor/services/color'
 import { UpdateSettingsForm } from '../editor/services/settings'
-import { inspect } from 'util'
 import { UpdateColorForm } from '../editor/services/color/forms';
+import { ColorConfigStore } from '../config'
 
 const bodyParser = body_parser.json()
 const parseBody = <T={[key:string]:any}>(req:Connect.IncomingMessage, res:ServerResponse):Promise<T> => new Promise((resolve, reject) => {
@@ -23,16 +23,13 @@ const parseBody = <T={[key:string]:any}>(req:Connect.IncomingMessage, res:Server
 	return (req as any).body
 })
 
-export function createColorSuiteServer(server:ViteDevServer, get_color_config:Promise<ColorSuiteConfig>, color_config_path:string) {
-	let instance_color_config:ColorSuiteConfig | null = null
-	async function color_config_promise() {
-		if (!instance_color_config) instance_color_config = await get_color_config
-		return instance_color_config
-	}
+export function createColorSuiteServer(server:ViteDevServer, color_config_store: (() => Promise<ColorConfigStore>)) {
+	const color_config_promise = async () => await (await color_config_store()).read()
+	const save_color_config_promise = async (color_config:ColorSuiteConfig) => await (await color_config_store()).write(color_config)
 
 	async function saveConfig(reload:boolean = false) {
 		const color_config = await color_config_promise()
-		await fs.writeFile(color_config_path, `module.exports = ${ inspect(color_config, false, Infinity) }`)
+		await save_color_config_promise(color_config)
 
 		let config_module = server.moduleGraph.getModuleById(COLOR_CONFIG_ID)
 		if(config_module) server.moduleGraph.invalidateModule(config_module)

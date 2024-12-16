@@ -3,13 +3,6 @@ import { ColorHSVA, hexToHSVA } from './editor/lib/color'
 import colors from 'tailwindcss/colors'
 import { ColorSuiteColors, ColorSuiteConfig, ColorSuiteResolvedColors, CSColorScale, TailwindColors } from './types'
 import { colorToTailwind } from './editor/lib/utils.tailwind'
-import { bundleRequire } from 'bundle-require'
-
-export async function dynamicRequire(path: string) {
-	return (await bundleRequire({
-		filepath: path
-	})).mod
-}
 
 export function getDefaultsFromTailwind() {
 	const color_suite_colors:ColorSuiteColors = {}

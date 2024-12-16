@@ -1,48 +1,53 @@
 import { ModuleNode, Plugin } from 'vite'
 import { ColorSuiteConfig } from '../types'
 import { DEFAULT_COLOR_CONFIG, COLOR_CONFIG_ID, SETTINGS_CONFIG_ID, COLOR_SUITE_ID, RESOLVED_COLORS_ID, PREFIXED_COLOR_CONFIG_ID, PREFIXED_SETTINGS_CONFIG_ID, PREFIXED_RESOLVED_COLORS_ID } from '../constants';
-import { writeFileSync, existsSync } from 'fs'
-import { inspect } from 'util'
+import { promises as fs, existsSync } from 'fs'
 import { join } from 'path'
-import { pathToFileURL } from 'url'
 import { createColorSuiteServer } from '../server'
-import { getDefaultsFromTailwind, resolveColorConfig, dynamicRequire } from '../utils'
+import { getDefaultsFromTailwind, resolveColorConfig } from '../utils'
+import { createConfigStore } from '../config'
 
 export function colorSuiteDevPlugin():Plugin {
   const DEFAULTS_WITH_COLORS = Object.assign({}, DEFAULT_COLOR_CONFIG, {
     colors: getDefaultsFromTailwind()
   })
-  let color_config_path = join(process.cwd(), 'colors.config.js')
-  const color_config_promise = async () => {
+
+  const color_config_store_promise = async () => {
+    const color_config_store = await createConfigStore()
     let color_config:ColorSuiteConfig
     try {
-      color_config = await dynamicRequire(color_config_path)
+      color_config = await color_config_store.read()
     } catch(e) {
       // There was a problem requiring the color config
-      if (existsSync(color_config_path)) {
+      if (existsSync(color_config_store.path)) {
         // The file exists so it has been created, most likely malformatted. We cannot fix this automatically so just throw an error
-        throw new Error(`[Color Suite Dev] A color config file exists at '${ color_config_path}' but it could not be required.`)
+        throw new Error(`[Color Suite Dev] A color config file exists at '${color_config_store.path}' but it could not be required.`)
       } else try {
         // Color config file doesn't exist so we can try to make a new one
-        writeFileSync(color_config_path, `module.exports = ${ inspect(DEFAULTS_WITH_COLORS, false, Infinity) }`)
+        await color_config_store.write(DEFAULTS_WITH_COLORS)
         color_config = DEFAULTS_WITH_COLORS
       } catch(e) {
         console.error(e)
-        throw new Error(`[Color Suite Dev] Unable to create the color config file at '${ color_config_path}'.`)
+        throw new Error(`[Color Suite Dev] Unable to create the color config file at '${color_config_store.path}'.`)
       }
     }
 
     if (!color_config || typeof color_config != "object") throw new Error(`[Color Suite Dev] The color config does not export an object.`)
     color_config = Object.assign(DEFAULTS_WITH_COLORS, color_config)
-    return color_config
+    color_config_store.store(color_config)
+    return color_config_store
   }
+
+	const color_config_promise = async () => await (await color_config_store_promise()).read()
 
 	return {
 		name: 'tailwindcss-color-suite-dev',
     apply: 'serve',
     configureServer: server => {
-      server.watcher.add(color_config_path)
-      return createColorSuiteServer(server, color_config_promise(), color_config_path)
+      color_config_store_promise().then(config => {
+        server.watcher.add(config.path)
+      })
+      return createColorSuiteServer(server, color_config_store_promise)
     },
 		resolveId(id) {
       // Virtual Import: Config colors object
@@ -71,7 +76,7 @@ export function colorSuiteDevPlugin():Plugin {
     async handleHotUpdate({ file, server }) {
       if (file.match(/colors\.config\.js/g)) {
         // bundleRequire already does cachebusting
-        let color_config:ColorSuiteConfig = await dynamicRequire(color_config_path)
+        let color_config:ColorSuiteConfig = await color_config_promise()
         color_config = Object.assign(DEFAULTS_WITH_COLORS, color_config) // make sure we've got all defaults
 
         let config_module = server.moduleGraph.getModuleById(COLOR_CONFIG_ID)
