@@ -1,14 +1,15 @@
 import { ColorSuiteConfig } from './types'
 import { bundleRequire, JS_EXT_RE } from 'bundle-require'
 import { promises as fs } from 'fs'
-import { resolve } from 'path'
+import { basename, dirname, resolve } from 'path'
 import { inspect } from 'util'
 
 export interface ColorConfigStore {
     path: string
-    read(): Promise<ColorSuiteConfig>
+    read(nocache?: boolean): Promise<ColorSuiteConfig>
     write(config: ColorSuiteConfig): Promise<void>
     store(config: ColorSuiteConfig): Promise<void>
+    match(path: string): boolean
 }
 
 function isESM() {
@@ -50,6 +51,13 @@ async function guessFileName(path: string, prefix: string, patterns: RegExp = JS
     return `${prefix}.${defaultExt}`
 }
 
+function matchFileName(path: string, modPath: string, patterns: RegExp = JS_EXT_RE) {
+    return path === modPath ||
+        dirname(path) === dirname(modPath) &&
+        basename(path) === basename(modPath) &&
+        patterns.test(modPath)
+}
+
 class ColorConfigStoreClass {
     private static instance: ColorConfigStore | null = null
 
@@ -75,8 +83,8 @@ class ColorConfigStoreClass {
         this.path = resolve(this.path)
     }
 
-    public async read(): Promise<ColorSuiteConfig> {
-        if (!this.config_cache) {
+    public async read(nocache?: boolean): Promise<ColorSuiteConfig> {
+        if (!this.config_cache || nocache) {
             this.config_cache = await dynamicRequire(this.path)
         }
         if (!this.config_cache) throw new Error('Cannot load config')
@@ -92,6 +100,10 @@ class ColorConfigStoreClass {
 
     public async store(config: ColorSuiteConfig): Promise<void> {
         this.config_cache = config
+    }
+
+    public match(path: string): boolean {
+        return matchFileName(this.path, resolve(path))
     }
 }
 

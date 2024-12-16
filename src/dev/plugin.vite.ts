@@ -37,8 +37,6 @@ export function colorSuiteDevPlugin():Plugin {
     return color_config_store
   }
 
-	const color_config_promise = async () => await (await color_config_store_promise()).read()
-
 	return {
 		name: 'tailwindcss-color-suite-dev',
     apply: 'serve',
@@ -59,7 +57,9 @@ export function colorSuiteDevPlugin():Plugin {
       if (id == RESOLVED_COLORS_ID) return PREFIXED_RESOLVED_COLORS_ID
     },
     async load(id) {
-      let color_config:ColorSuiteConfig = await color_config_promise()
+      const config_store = await color_config_store_promise()     
+      let color_config:ColorSuiteConfig = await config_store.read()
+
       // Virtual Import: Config colors object
       // Returns the current color config object
       if (id === PREFIXED_COLOR_CONFIG_ID) return `export const colors = ${ JSON.stringify(color_config.colors) }`
@@ -73,9 +73,9 @@ export function colorSuiteDevPlugin():Plugin {
       if (id === PREFIXED_RESOLVED_COLORS_ID) return `export const colors = ${ JSON.stringify(resolveColorConfig(color_config)) }`
     },
     async handleHotUpdate({ file, server }) {
-      if (file.match(/colors\.config\.js/g)) {
-        // color_config_promise already does cachebusting
-        let color_config:ColorSuiteConfig = await color_config_promise()
+      const config_store = await color_config_store_promise()      
+      if (config_store.match(file)) {
+        let color_config:ColorSuiteConfig = await config_store.read(true) // cache bust
         color_config = Object.assign(DEFAULTS_WITH_COLORS, color_config) // make sure we've got all defaults
 
         let config_module = server.moduleGraph.getModuleById(COLOR_CONFIG_ID)

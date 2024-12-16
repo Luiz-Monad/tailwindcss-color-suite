@@ -2,7 +2,7 @@ import { Plugin } from 'vite'
 import { ColorSuiteConfig } from './types'
 import { COLOR_SUITE_PATH, COLOR_CONFIG_ID, DEFAULT_COLOR_CONFIG, EDITOR_APP_MOUNT_ID, SETTINGS_CONFIG_ID, COLOR_SUITE_ID, RESOLVED_COLORS_ID, PREFIXED_COLOR_CONFIG_ID, PREFIXED_SETTINGS_CONFIG_ID, PREFIXED_RESOLVED_COLORS_ID, SETTINGS_UPDATED_EVENT } from './constants';
 import { promises as fs, existsSync } from 'fs'
-import { createColorSuiteServer } from './server/index'
+import { createColorSuiteServer } from './server'
 import { getDefaultsFromTailwind, resolveColorConfig } from './utils'
 import { createConfigStore } from './config'
 
@@ -36,8 +36,6 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
     color_config_store.store(color_config)
     return color_config_store
   }
-
-	const color_config_promise = async () => await (await color_config_store_promise()).read()
 
 	return {
 		name: 'tailwindcss-color-suite',
@@ -75,8 +73,9 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
       if (id == RESOLVED_COLORS_ID) return PREFIXED_RESOLVED_COLORS_ID
     },
     async load(id) {
-      let color_config:ColorSuiteConfig = await color_config_promise()
-      
+      const config_store = await color_config_store_promise()     
+      let color_config:ColorSuiteConfig = await config_store.read()
+
       // Virtual File: /@tailwindcss-color-suite
       // Main entry point to scaffold the editor application.
       if (id === COLOR_SUITE_PATH) return `import "tailwindcss-color-suite/app";`
@@ -94,9 +93,9 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
       if (id === PREFIXED_RESOLVED_COLORS_ID) return `export const colors = ${ JSON.stringify(resolveColorConfig(color_config)) }`
     },
     async handleHotUpdate({ file, server }) {
-      if (file.match(/colors\.config\.js/g)) {
-        // color_config_promise already does cachebusting
-        let color_config:ColorSuiteConfig = await color_config_promise()
+      const config_store = await color_config_store_promise()      
+      if (config_store.match(file)) {
+        let color_config:ColorSuiteConfig = await config_store.read(true) // cache bust
         color_config = Object.assign(DEFAULTS_WITH_COLORS, color_config) // make sure we've got all defaults
 
         let config_module = server.moduleGraph.getModuleById(COLOR_CONFIG_ID)
