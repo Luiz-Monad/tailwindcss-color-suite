@@ -45,12 +45,12 @@
 		"client.d.ts"
 	],
 	"scripts": {
-		"build": "vite build && tsup",
+		"build": "vite build && tsup && tsup --config ./bin/tsup.config.ts",
 		"dev": "vite",
 		"test": "jest"
 	},
 	"bin": {
-		"tailwindcss-color-suite": "bin/cli.js"
+		"tailwindcss-color-suite": "./dist/cli.mjs"
 	},
 	"gitHooks": {
 		"commit-msg": "node scripts/verifyCommit.js"

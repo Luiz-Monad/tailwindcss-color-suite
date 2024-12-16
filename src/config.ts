@@ -1,7 +1,7 @@
 import { ColorSuiteConfig } from './types'
 import { bundleRequire, JS_EXT_RE } from 'bundle-require'
 import { promises as fs } from 'fs'
-import { basename, dirname, resolve } from 'path'
+import { basename, dirname, extname, resolve } from 'path'
 import { inspect } from 'util'
 
 export interface ColorConfigStore {
@@ -59,7 +59,7 @@ function matchFileName(path: string, modPath: string, patterns: RegExp = JS_EXT_
 }
 
 class ColorConfigStoreClass {
-    private static instance: ColorConfigStore | null = null
+    private static instance: Map<string, ColorConfigStore> | null = null
 
     private config_cache: ColorSuiteConfig | null = null
 
@@ -68,17 +68,22 @@ class ColorConfigStoreClass {
     private constructor() { }
 
     public static async getInstance(userDefinedPath?: string): Promise<ColorConfigStore> {
+        const key = userDefinedPath ?? '<default>'
         if (!ColorConfigStoreClass.instance) {
+            ColorConfigStoreClass.instance = new Map()
+        }
+        if (!ColorConfigStoreClass.instance.has(key)) {
             const instance = new ColorConfigStoreClass()
             await instance.set_path(userDefinedPath)
-            ColorConfigStoreClass.instance = instance
+            ColorConfigStoreClass.instance.set(key, instance)
         }
-        return ColorConfigStoreClass.instance
+        return ColorConfigStoreClass.instance.get(key)!
     }
 
     private async set_path(userDefinedPath?: string): Promise<void> {
-        this.path = userDefinedPath ? userDefinedPath
-            : await guessFileName(process.cwd(), 'colors.config')
+        this.path = !userDefinedPath
+            ? await guessFileName(process.cwd(), 'colors.config')
+            : await guessFileName(process.cwd(), userDefinedPath)
         if (!this.path) throw new Error('Cannot determine config path')
         this.path = resolve(this.path)
     }
