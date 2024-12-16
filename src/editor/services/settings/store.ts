@@ -2,6 +2,7 @@ import { Module } from 'vuex'
 import { ColorSuiteSettings } from '../../../types'
 import { UpdateSettingsForm } from './forms'
 import { settings as settings_config } from 'virtual:color-suite/config/settings'
+import { SETTINGS_UPDATE_PATH } from '../../../constants'
 
 export const settings_store:Module<ColorSuiteSettings, any> = {
 	namespaced: true,
@@ -22,7 +23,7 @@ export const settings_store:Module<ColorSuiteSettings, any> = {
 			context.commit('update', form) // eager commit
 
 			try {
-				let result = await fetch('/@tailwindcss-color-suite/settings/update', {
+				let result = await fetch(SETTINGS_UPDATE_PATH, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',

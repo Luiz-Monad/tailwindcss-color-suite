@@ -4,6 +4,7 @@ import { CreateColorForm, UpdateColorForm } from './forms'
 import { hydrateColorConfig, isColorScale, convertPoints } from '../../lib/utils.color-suite'
 import { reactiveCloneDeep } from '../../lib/utils'
 import { colors as colors_config } from 'virtual:color-suite/config/colors'
+import { COLOR_CREATE_PATH, COLOR_DELETE_PATH, COLOR_UPDATE_ALL_PATH, COLOR_UPDATE_PATH } from '../../../constants'
 
 interface UpdatePayload {
 	token: string
@@ -57,7 +58,7 @@ export const color_store:Module<ColorSuiteColors, any> = {
 	},
 	actions: {
 		async create(context, form:CreateColorForm) {
-			let result = await fetch('/@tailwindcss-color-suite/color/create', {
+			let result = await fetch(COLOR_CREATE_PATH, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -72,7 +73,7 @@ export const color_store:Module<ColorSuiteColors, any> = {
 			return { success: false }
 		},
 		async update(context, { token, form }:UpdatePayload) {
-			let result = await fetch(`/@tailwindcss-color-suite/color/update?token=${token}`, {
+			let result = await fetch(`${COLOR_UPDATE_PATH}?token=${token}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ export const color_store:Module<ColorSuiteColors, any> = {
 
 			context.commit('updateAll', colors) // Eager commit
 
-			let result = await fetch(`/@tailwindcss-color-suite/color/updateAll`, {
+			let result = await fetch(COLOR_UPDATE_ALL_PATH, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -107,7 +108,7 @@ export const color_store:Module<ColorSuiteColors, any> = {
 			return { success: false }
 		},
 		async delete(context, { token }:DeletePayload) {
-			let result = await fetch(`/@tailwindcss-color-suite/color/delete?token=${token}`, {
+			let result = await fetch(`${COLOR_DELETE_PATH}?token=${token}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

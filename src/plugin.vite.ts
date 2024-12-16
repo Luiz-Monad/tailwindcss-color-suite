@@ -1,8 +1,7 @@
 import { Plugin } from 'vite'
 import { ColorSuiteConfig } from './types'
-import { COLOR_SUITE_PATH, COLOR_CONFIG_ID, DEFAULT_COLOR_CONFIG, EDITOR_APP_MOUNT_ID, SETTINGS_CONFIG_ID, COLOR_SUITE_ID, RESOLVED_COLORS_ID, PREFIXED_COLOR_CONFIG_ID, PREFIXED_SETTINGS_CONFIG_ID, PREFIXED_RESOLVED_COLORS_ID } from './constants';
+import { COLOR_SUITE_PATH, COLOR_CONFIG_ID, DEFAULT_COLOR_CONFIG, EDITOR_APP_MOUNT_ID, SETTINGS_CONFIG_ID, COLOR_SUITE_ID, RESOLVED_COLORS_ID, PREFIXED_COLOR_CONFIG_ID, PREFIXED_SETTINGS_CONFIG_ID, PREFIXED_RESOLVED_COLORS_ID, SETTINGS_UPDATED_EVENT } from './constants';
 import { promises as fs, existsSync } from 'fs'
-import { inspect } from 'util'
 import { createColorSuiteServer } from './server/index'
 import { getDefaultsFromTailwind, resolveColorConfig } from './utils'
 import { createConfigStore } from './config'
@@ -96,7 +95,7 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
     },
     async handleHotUpdate({ file, server }) {
       if (file.match(/colors\.config\.js/g)) {
-        // bundleRequire already does cachebusting
+        // color_config_promise already does cachebusting
         let color_config:ColorSuiteConfig = await color_config_promise()
         color_config = Object.assign(DEFAULTS_WITH_COLORS, color_config) // make sure we've got all defaults
 
@@ -111,7 +110,7 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
 
         server.ws.send({
           type: 'custom',
-          event: `${ COLOR_SUITE_ID }:config-updated`,
+          event: SETTINGS_UPDATED_EVENT,
           data: color_config
         })
 

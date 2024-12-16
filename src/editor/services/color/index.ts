@@ -3,7 +3,7 @@ import { Store } from 'vuex'
 import { ColorService } from './types';
 import { ColorSuiteColors, CSColor } from '../../../types'
 import { CreateColorForm, UpdateColorForm } from './forms'
-import { COLOR_SUITE_ID } from '../../../constants'
+import { COLOR_SUITE_ID, SETTINGS_UPDATED_EVENT } from '../../../constants'
 import { color_store } from './store'
 import { updateRootVariables } from '../../lib/utils.color-suite'
 import { colors as colors_config } from 'virtual:color-suite/config/colors'
@@ -32,7 +32,7 @@ export function createColorService(store:Store<any>) {
 	}
 
 	if (import.meta.hot) {
-		import.meta.hot.on(`${ COLOR_SUITE_ID }:config-updated` as any, (config:any) => {
+		import.meta.hot.on(SETTINGS_UPDATED_EVENT as any, (config:any) => {
 			store.commit('colors/updateAll', config.colors)
 
 			for (let [token, value] of Object.entries<CSColor>(config.colors)) {

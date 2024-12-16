@@ -1,9 +1,9 @@
-import { inject, reactive, computed, toRaw, triggerRef, toRef } from 'vue'
+import { inject, reactive } from 'vue'
 import { SettingsService } from './types'
 import { ColorSuiteSettings } from '../../../types'
 import { Store } from 'vuex'
 import { settings_store } from './store'
-import { COLOR_SUITE_ID, DEFAULT_COLOR_CONFIG } from '../../../constants';
+import { SETTINGS_UPDATED_EVENT } from '../../../constants';
 
 const settings_service_key = Symbol('__SETTINGS_SERVICE__')
 
@@ -25,7 +25,7 @@ export function createSettingsService(store:Store<any>) {
 	})
 
 	if (import.meta.hot) {
-		import.meta.hot.on(`${ COLOR_SUITE_ID }:config-updated` as any, (config:any) => {
+		import.meta.hot.on(SETTINGS_UPDATED_EVENT as any, (config:any) => {
 			store.commit('settings/update', config.settings)
 		})
 	}
