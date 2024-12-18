@@ -73,8 +73,10 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
 			if (id == RESOLVED_COLORS_ID) return PREFIXED_RESOLVED_COLORS_ID
 		},
 		async load(id) {
-			const config_store = await color_config_store_promise()
-			let color_config:ColorSuiteConfig = await config_store.read()
+			const color_config = async () => {
+				const config_store = await color_config_store_promise()
+				return await config_store.read()
+			}
 
 			// Virtual File: /@tailwindcss-color-suite
 			// Main entry point to scaffold the editor application.
@@ -82,15 +84,15 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
 
 			// Virtual Import: Config colors object
 			// Returns the current color config object
-			if (id === PREFIXED_COLOR_CONFIG_ID) return `export const colors = ${ JSON.stringify(color_config.colors) }`
+			if (id === PREFIXED_COLOR_CONFIG_ID) return `export const colors = ${ JSON.stringify((await color_config()).colors) }`
 
 			// Virtual Import: Config settings object
 			// Returns the current settings config object
-			if (id === PREFIXED_SETTINGS_CONFIG_ID) return `export const settings = ${ JSON.stringify(color_config.settings) }`
+			if (id === PREFIXED_SETTINGS_CONFIG_ID) return `export const settings = ${ JSON.stringify((await color_config()).settings) }`
 
 			// Virtual Import: Colors object resolved to CSS values
 			// Returns the resolved color object
-			if (id === PREFIXED_RESOLVED_COLORS_ID) return `export const colors = ${ JSON.stringify(resolveColorConfig(color_config)) }`
+			if (id === PREFIXED_RESOLVED_COLORS_ID) return `export const colors = ${ JSON.stringify(resolveColorConfig((await color_config()))) }`
 		},
 		async handleHotUpdate({ file, server }) {
 			const config_store = await color_config_store_promise()
