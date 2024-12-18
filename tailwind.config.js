@@ -8,7 +8,7 @@ module.exports = {
       './index.html',
       './src/**/*.{js,ts,vue}',
   ],
-	prefix: '__cs-',
+  prefix: '__cs-',
   theme: {
     extend: {
       colors: {

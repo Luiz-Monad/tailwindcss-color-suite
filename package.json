@@ -47,7 +47,8 @@
 	"scripts": {
 		"build": "vite build && tsup && tsup --config ./bin/tsup.config.ts",
 		"dev": "vite",
-		"test": "jest"
+		"test": "jest",
+		"format": "npx -y eclint fix"
 	},
 	"bin": {
 		"tailwindcss-color-suite": "./dist/cli.mjs"

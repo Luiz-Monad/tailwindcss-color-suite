@@ -168,9 +168,9 @@ export function resolveColorConfig(color_config:ColorSuiteConfig):ColorSuiteReso
 		}
 	}
 
-  if (include_transparent) tailwind_color_config['transparent'] = 'transparent'
-  if (include_current) tailwind_color_config['current'] = 'currentColor'
-  if (include_inherit) tailwind_color_config['inherit'] = 'inherit'
+	if (include_transparent) tailwind_color_config['transparent'] = 'transparent'
+	if (include_current) tailwind_color_config['current'] = 'currentColor'
+	if (include_inherit) tailwind_color_config['inherit'] = 'inherit'
 
 	return tailwind_color_config
 }

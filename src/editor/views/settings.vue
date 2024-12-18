@@ -12,7 +12,7 @@
 	export default defineComponent({
 		components: { SettingsEditor },
 		setup () {
-			
+
 
 			return {}
 		}

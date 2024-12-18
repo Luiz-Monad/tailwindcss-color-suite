@@ -21,15 +21,15 @@ function logErrorAndExit(...args) {
 }
 
 async function main() {
-    const color_config_store = await createConfigStore()
+	const color_config_store = await createConfigStore()
 	const tailwind_config_store = await createConfigStore('tailwindcss.colors.config')
 
 	logInfo(`${PREFIX} Attempting to export the color config file at '${color_config_store.path}'.`)
 
-    let color_config:ColorSuiteConfig | null = null
+	let color_config:ColorSuiteConfig | null = null
 	try {
 		color_config = await color_config_store.read()
-	} catch(e: any) {	
+	} catch(e: any) {
 		if (existsSync(color_config_store.path)) {
 			logError(`${PREFIX} ${e.message}`)
 			logErrorAndExit(`${PREFIX} ❌ A color config file exists at '${color_config_store.path}' but it could not be required.`)
@@ -42,7 +42,7 @@ async function main() {
 
 	try {
 		let color_object = configToTailwindColors(color_config!, true)
-        await tailwind_config_store.write(color_object as unknown as ColorSuiteConfig)
+		await tailwind_config_store.write(color_object as unknown as ColorSuiteConfig)
 	} catch(e: any) {
 		logError(`${PREFIX} ${e.message}`)
 		logErrorAndExit(`${PREFIX} ❌ Unable to write to output file ${tailwind_config_store.path}.`)

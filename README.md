@@ -33,9 +33,9 @@ import { colorSuitePlugin } from 'tailwindcss-color-suite'
 
 export default defineConfig({
   plugins: [
-		...
-		colorSuitePlugin()
-	]
+    ...
+    colorSuitePlugin()
+  ]
 })
 
 ```
@@ -47,10 +47,10 @@ Finally, use the Color Suite configuration function in your Tailwind CSS config:
 const { tailwindColors } = require('tailwindcss-color-suite')
 
 module.exports = {
-	theme: {
-		colors: tailwindColors(require('./colors.config.js')),
-		...
-	}
+  theme: {
+    colors: tailwindColors(require('./colors.config.js')),
+    ...
+  }
 }
 ```
 

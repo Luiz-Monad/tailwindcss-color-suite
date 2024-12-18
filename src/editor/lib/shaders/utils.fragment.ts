@@ -15,9 +15,9 @@ bool approximately(float a, float b) {
 export const ColorConversionUtils = glsl`
 vec3 hsv2rgb(vec3 c)
 {
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+	return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 `
 export const BezierUtils = glsl`
@@ -73,7 +73,7 @@ float getRoot(float pa, float pb, float pc, float pd) {
 	float p = (3.0 * b - a * a) / 3.0;
 	float p3 = p / 3.0;
 	float q = (2.0 * a * a * a - 9.0 * a * b + 27.0 * c) / 27.0;
-  float q2 = q / 2.0;
+	float q2 = q / 2.0;
 	float discriminant = q2 * q2 + p3 * p3 * p3;
 
 	if (discriminant < 0.0) {

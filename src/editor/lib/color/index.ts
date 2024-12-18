@@ -36,7 +36,7 @@ export function Color(color:ColorAny = { h:0, s:100, v:100, a:100 }) {
 		initial_rgb = { r, g, b }
 	}
 
-  const hsva = reactive<ColorHSVA>(initial_hsva)
+	const hsva = reactive<ColorHSVA>(initial_hsva)
 	const { h, s, v, a } = toRefs(hsva)
 
 	const rgb = reactive<ColorRGB>(initial_rgb)
@@ -44,7 +44,7 @@ export function Color(color:ColorAny = { h:0, s:100, v:100, a:100 }) {
 
 	const hex = ref<ColorHEX>(initial_hex)
 
-	let syncing = false	
+	let syncing = false
 	// Sync Alpha
 	watch(a, () => {
 		if (!syncing) {
@@ -108,11 +108,11 @@ export function Color(color:ColorAny = { h:0, s:100, v:100, a:100 }) {
 	}
 	watch(hex, syncHEX, watch_options)
 
-  return reactive({
+	return reactive({
 		h,s,v,a,
-    r,g,b,
-    hex
-  })
+		r,g,b,
+		hex
+	})
 }
 
 export * from './types'

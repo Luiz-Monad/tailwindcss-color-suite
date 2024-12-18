@@ -13,11 +13,11 @@ import { ColorConfigStore } from '../config'
 
 const bodyParser = body_parser.json()
 const parseBody = <T={[key:string]:any}>(req:Connect.IncomingMessage, res:ServerResponse):Promise<T> => new Promise((resolve, reject) => {
-  try {
-    bodyParser(req, res, resolve)
-  } catch(e) {
-    reject(e)
-  }
+	try {
+		bodyParser(req, res, resolve)
+	} catch(e) {
+		reject(e)
+	}
 }).then((e) => {
 	if (e) throw e
 	return (req as any).body

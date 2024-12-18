@@ -37,11 +37,11 @@ export function rgbToHSV({ r, g, b }:ColorRGB):ColorHSV {
 	}
 
 	h *= 360, s *= 100, v *= 100
-  return { h, s, v }
+	return { h, s, v }
 }
 
 export function rgbaToHSVA({ r, g, b, a = 100 }:ColorRGBA):ColorHSVA {
-  return { ...rgbToHSV({ r, g, b }), a }
+	return { ...rgbToHSV({ r, g, b }), a }
 }
 
 export function hsvToRGB({ h, s, v }:ColorHSV):ColorRGB {
@@ -65,11 +65,11 @@ export function hsvToRGB({ h, s, v }:ColorHSV):ColorRGB {
 	}
 
 	r = Math.round(r * 255), g = Math.round(g * 255), b = Math.round(b * 255)
-  return { r, g, b }
+	return { r, g, b }
 }
 
 export function hsvaToRGBA({ h, s, v, a = 100 }:ColorHSVA):ColorRGBA {
-  return { ...hsvToRGB({ h, s, v }), a }
+	return { ...hsvToRGB({ h, s, v }), a }
 }
 
 function decToHex(decimal:number):string {
@@ -81,23 +81,23 @@ function hexToDec(hex:string):number {
 }
 
 export function rgbToHex({ r, g, b }:ColorRGB):ColorHEX {
-  return `#${ decToHex(r) }${ decToHex(g) }${ decToHex(b) }`
+	return `#${ decToHex(r) }${ decToHex(g) }${ decToHex(b) }`
 }
 
 export function rgbaToHex({ r, g, b, a = 100 }:ColorRGBA):ColorHEX {
-  return rgbToHex({r, g, b }) + (a == 100 ? '' : decToHex(a * 2.55))
+	return rgbToHex({r, g, b }) + (a == 100 ? '' : decToHex(a * 2.55))
 }
 
 export function hexToRGB(hex:ColorHEX):ColorRGB {
 	const [r, g, b] = (hex.slice(1).match(/.{1,2}/g) || []).map(hexToDec)
-  return {
+	return {
 		r, g, b
 	}
 }
 
 export function hexToRGBA(hex:ColorHEX):ColorRGBA {
 	const [r, g, b, a] = (hex.slice(1).match(/.{1,2}/g) || []).map(hexToDec)
-  return {
+	return {
 		...{ a: 100 }, // Make sure we always have alpha
 		r, g, b, a
 	}

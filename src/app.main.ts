@@ -24,5 +24,5 @@ if (shadow) {
 	const instance = app.mount(app_root)
 	instance.$nextTick(() => app_root.style.display = '')
 } else {
-  console.error('[Color Suite] Unable to create shadow root.')
+	console.error('[Color Suite] Unable to create shadow root.')
 }

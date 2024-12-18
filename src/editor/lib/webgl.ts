@@ -14,7 +14,7 @@ export function createFragmentProgram(canvas:HTMLCanvasElement, fragment_source:
 
 	// Create shaders
 	const passthrough_vertex_shader = createShader(gl, gl.VERTEX_SHADER, PassThroughVertexSource) // We aren't doing anything with vertices so this is just a kind of no-op thing
-	const gradient_fragment_shader = createShader(gl, gl.FRAGMENT_SHADER, fragment_source) // This shader actually generates the gradient based on the component curve 
+	const gradient_fragment_shader = createShader(gl, gl.FRAGMENT_SHADER, fragment_source) // This shader actually generates the gradient based on the component curve
 
 	// Create program
 	const program = createProgram(gl, passthrough_vertex_shader, gradient_fragment_shader)
