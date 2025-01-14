@@ -14,8 +14,9 @@ export interface ColorConfigStore {
 
 function isESM() {
 	try {
-		// Check if import.meta exists (ESM specific)
-		return typeof import.meta !== 'undefined'
+		if (typeof __filename !== 'undefined') {
+			return __filename.endsWith('.mjs') ? 'esm' : 'cjs';
+		}
 	} catch {
 		return false
 	}

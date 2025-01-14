@@ -7,6 +7,7 @@ export const tsup: Options = {
 	splitting: true,
 	sourcemap: true,
 	minify: false,
+	cjsInterop: true,
 	format: ['cjs', 'esm'],
 	entryPoints: ['src/index.ts'],
 	noExternal: [
