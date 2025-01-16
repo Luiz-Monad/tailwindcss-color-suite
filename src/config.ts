@@ -101,8 +101,14 @@ class ColorConfigStoreClass {
 
 	public async write(config: ColorSuiteConfig): Promise<void> {
 		this.config_cache = config
+		const ext = extname(this.path);
+		const code = inspect(config, false, Infinity);
 		await fs.writeFile(this.path,
-			`${isESM() ? 'export default ' : 'module.exports = '}${inspect(config, false, Infinity)}`
+			ext === '.ts' || ext === '.mts' ?
+				`import type { ColorSuiteConfig } from 'tailwindcss-color-suite';\n\nexport default \n${code} satisfies ColorSuiteConfig;` :
+				ext === '.mjs' ?
+					`export default ${code}`
+					: `module.exports = ${code}`
 		)
 	}
 
