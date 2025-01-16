@@ -12,6 +12,8 @@ export interface ColorConfigStore {
 	match(path: string): boolean
 }
 
+export { ColorSuiteConfig };
+
 function isESM() {
 	try {
 		if (typeof __filename !== 'undefined') {

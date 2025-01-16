@@ -1,6 +1,10 @@
 import { Config } from 'tailwindcss'
-import { Point } from './editor/lib/point'
 import { ColorHSVA } from './editor/lib/color'
+
+export interface Point {
+	x:number
+	y:number
+}
 
 export type TailwindColor = string | TailwindColorObject
 export type TailwindColorObject = { [key:string]:string }
