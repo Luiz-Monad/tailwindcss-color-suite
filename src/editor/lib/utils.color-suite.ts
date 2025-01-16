@@ -1,4 +1,4 @@
-import { CSComponentCurve, ColorSuiteColors, CSColorScale, CSColor, CSColorAlias, CSColorSolid, CSColorAliasResolutionError } from '../../types'
+import { CSComponentCurve, ColorSuiteColors, CSColorScale, CSColor, CSColorAlias, CSColorSolid, CSColorAliasResolutionError, Point as IPoint } from '../../types'
 import { isHSVAColor, hsvaToRGBA } from './color/utils'
 import { Point } from './point'
 import { colorScaleRGBAValues } from './color-scale/utils'
@@ -21,7 +21,10 @@ export function isColorAliasResolutionError(object:any):object is CSColorAliasRe
 
 export function convertPoints(curve:CSComponentCurve) {
 	for (let i in curve.controls) {
-		if (!(curve.controls[i] instanceof Point)) curve.controls[i] = new Point(curve.controls[i])
+		if (!(curve.controls[i] instanceof Point))
+		{
+			curve.controls[i] = new Point(curve.controls[i])
+		}
 	}
 }
 
@@ -31,6 +34,30 @@ export function hydrateColorConfig(colors:ColorSuiteColors) {
 			convertPoints(value.hue_curve)
 			convertPoints(value.saturation_curve)
 			convertPoints(value.value_curve)
+		}
+	}
+	return colors
+}
+
+export function convertPointBack(curve:CSComponentCurve) {
+	const controls = new Array<IPoint>(4)
+	for (let i in curve.controls) {
+		if ((curve.controls[i] instanceof Point)) {
+			controls[i] = { x: curve.controls[i].x, y: curve.controls[i].y}
+		}
+		else {
+			controls[i] = curve.controls[i]
+		}
+	}
+	curve.controls = controls as [IPoint, IPoint, IPoint, IPoint]
+}
+
+export function dehydrateColorConfig(colors:ColorSuiteColors) {
+	for (let [_, value] of Object.entries(colors)) {
+		if (isColorScale(value)) {
+			convertPointBack(value.hue_curve)
+			convertPointBack(value.saturation_curve)
+			convertPointBack(value.value_curve)
 		}
 	}
 	return colors

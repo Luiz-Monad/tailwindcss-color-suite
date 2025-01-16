@@ -23,7 +23,8 @@ export function colorSuitePlugin(options:{ config?:string } = {}):Plugin {
 				throw new Error(`[Color Suite] A color config file exists at '${color_config_store.path}' but it could not be required.`)
 			} else try {
 				// Color config file doesn't exist so we can try to make a new one
-				await color_config_store.write(DEFAULTS_WITH_COLORS)
+			  color_config_store.store(DEFAULTS_WITH_COLORS)
+				await color_config_store.write()
 				color_config = DEFAULTS_WITH_COLORS
 			} catch(e) {
 				console.error(e)

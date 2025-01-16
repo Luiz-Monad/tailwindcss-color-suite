@@ -3,11 +3,12 @@ import { bundleRequire, JS_EXT_RE } from 'bundle-require'
 import { promises as fs } from 'fs'
 import { basename, dirname, extname, resolve } from 'path'
 import { inspect } from 'util'
+import { dehydrateColorConfig } from './editor/lib/utils.color-suite'
 
 export interface ColorConfigStore {
 	path: string
 	read(nocache?: boolean): Promise<ColorSuiteConfig>
-	write(config: ColorSuiteConfig): Promise<void>
+	write(): Promise<void>
 	store(config: ColorSuiteConfig): Promise<void>
 	match(path: string): boolean
 }
@@ -99,10 +100,12 @@ class ColorConfigStoreClass {
 		return this.config_cache
 	}
 
-	public async write(config: ColorSuiteConfig): Promise<void> {
-		this.config_cache = config
-		const ext = extname(this.path);
-		const code = inspect(config, false, Infinity);
+	public async write(): Promise<void> {
+		const ext = extname(this.path)
+		if (this.config_cache?.colors) {
+			dehydrateColorConfig(this.config_cache?.colors)
+		}
+		const code = inspect(this.config_cache, false, Infinity)
 		await fs.writeFile(this.path,
 			ext === '.ts' || ext === '.mts' ?
 				`import type { ColorSuiteConfig } from 'tailwindcss-color-suite';\n\nexport default \n${code} satisfies ColorSuiteConfig;` :

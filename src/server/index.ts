@@ -12,10 +12,10 @@ import { UpdateColorForm } from '../editor/services/color/forms';
 import { ColorConfigStore } from '../config'
 
 const bodyParser = body_parser.json()
-const parseBody = <T={[key:string]:any}>(req:Connect.IncomingMessage, res:ServerResponse):Promise<T> => new Promise((resolve, reject) => {
+const parseBody = <T = { [key: string]: any }>(req: Connect.IncomingMessage, res: ServerResponse): Promise<T> => new Promise((resolve, reject) => {
 	try {
 		bodyParser(req, res, resolve)
-	} catch(e) {
+	} catch (e) {
 		reject(e)
 	}
 }).then((e) => {
@@ -23,23 +23,31 @@ const parseBody = <T={[key:string]:any}>(req:Connect.IncomingMessage, res:Server
 	return (req as any).body
 })
 
-export function createColorSuiteServer(server:ViteDevServer, color_config_store: (() => Promise<ColorConfigStore>)) {
+export function createColorSuiteServer(server: ViteDevServer, color_config_store: (() => Promise<ColorConfigStore>)) {
 	const color_config_promise = async () => await (await color_config_store()).read()
-	const save_color_config_promise = async (color_config:ColorSuiteConfig) => await (await color_config_store()).write(color_config)
+	const save_color_config_promise = async () => await (await color_config_store()).write()
 
-	async function saveConfig(reload:boolean = false) {
-		const color_config = await color_config_promise()
-		await save_color_config_promise(color_config)
+	async function saveConfig(reload: boolean = false) {
+		await save_color_config_promise()
 
 		let config_module = server.moduleGraph.getModuleById(COLOR_CONFIG_ID)
-		if(config_module) server.moduleGraph.invalidateModule(config_module)
+		if (config_module) server.moduleGraph.invalidateModule(config_module)
 
 		let settings_module = server.moduleGraph.getModuleById(SETTINGS_CONFIG_ID)
-		if(settings_module) server.moduleGraph.invalidateModule(settings_module)
+		if (settings_module) server.moduleGraph.invalidateModule(settings_module)
 
 		if (reload) {
 			const time = new Date()
-			await fs.utimes(join(process.cwd(), './tailwind.config.js'), time, time)
+			let ext = ''
+			for (const x of ['.ts', '.mts', '.js', '.mjs']) {
+				try {
+					if ((await fs.stat('./tailwind.config' + x)).isFile()) {
+						ext = x
+						break
+					}
+				} catch { }
+			}
+			await fs.utimes(join(process.cwd(), './tailwind.config' + ext), time, time)
 		}
 	}
 
@@ -62,7 +70,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config_store:
 
 			res.setHeader('Content-Type', 'application/json')
 			res.end(JSON.stringify({ success: true }))
-		} catch(e) {
+		} catch (e) {
 			next(e)
 		}
 	})
@@ -74,12 +82,12 @@ export function createColorSuiteServer(server:ViteDevServer, color_config_store:
 			const body = await parseBody<UpdateColorForm>(req, res)
 			if (!body || Object.keys(body).length == 0) throw new Error('No data provided.')
 
-			let url:URL, token:string|null
+			let url: URL, token: string | null
 			try {
 				url = new URL(`http://dummy.local${req.originalUrl!}`)
 				token = url.searchParams.get('token')
 				if (!token || !color_config.colors[token]) throw new Error() // Can have no message because it will get eaten
-			} catch(e) {
+			} catch (e) {
 				throw new Error('Color token does not exist.')
 			}
 
@@ -91,7 +99,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config_store:
 
 			res.setHeader('Content-Type', 'application/json')
 			res.end(JSON.stringify({ success: true }))
-		} catch(e) {
+		} catch (e) {
 			next(e)
 		}
 	})
@@ -127,7 +135,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config_store:
 
 			res.setHeader('Content-Type', 'application/json')
 			res.end(JSON.stringify({ success: true }))
-		} catch(e) {
+		} catch (e) {
 			next(e)
 		}
 	})
@@ -136,12 +144,12 @@ export function createColorSuiteServer(server:ViteDevServer, color_config_store:
 	server.middlewares.use(COLOR_DELETE_PATH, async (req, res, next) => {
 		const color_config = await color_config_promise()
 		try {
-			let url:URL, token:string|null
+			let url: URL, token: string | null
 			try {
 				url = new URL(`http://dummy.local${req.originalUrl!}`)
 				token = url.searchParams.get('token')
 				if (!token || !color_config.colors[token]) throw new Error()
-			} catch(e) {
+			} catch (e) {
 				throw new Error('Color token does not exist.')
 			}
 
@@ -150,7 +158,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config_store:
 
 			res.setHeader('Content-Type', 'application/json')
 			res.end(JSON.stringify({ success: true }))
-		} catch(e) {
+		} catch (e) {
 			next(e)
 		}
 	})
@@ -173,7 +181,7 @@ export function createColorSuiteServer(server:ViteDevServer, color_config_store:
 
 			res.setHeader('Content-Type', 'application/json')
 			res.end(JSON.stringify({ success: true }))
-		} catch(e) {
+		} catch (e) {
 			next(e)
 		}
 	})
