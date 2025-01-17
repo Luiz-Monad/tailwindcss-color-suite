@@ -42,7 +42,8 @@ async function main() {
 
 	try {
 		let color_object = configToTailwindColors(color_config!, true)
-		await tailwind_config_store.write(color_object as unknown as ColorSuiteConfig)
+		tailwind_config_store.store(color_object as unknown as ColorSuiteConfig)
+		await tailwind_config_store.write()
 	} catch(e: any) {
 		logError(`${PREFIX} ${e.message}`)
 		logErrorAndExit(`${PREFIX} ❌ Unable to write to output file ${tailwind_config_store.path}.`)
