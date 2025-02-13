@@ -1,5 +1,5 @@
-import { Config } from 'tailwindcss'
-import { ColorHSVA } from './editor/lib/color'
+import { type Config } from 'tailwindcss'
+import { type ColorHSVA } from './editor/lib/color'
 
 export interface Point {
 	x:number

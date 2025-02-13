@@ -1,8 +1,9 @@
 import type { Options } from 'tsup'
 import { commonjs } from "@hyrious/esbuild-plugin-commonjs"
 import module from 'node:module'
+import { tsup as bin } from './bin/tsup.config'
 
-export const tsup: Options = {
+const base: Options = {
 	dts: true,
 	splitting: true,
 	sourcemap: true,
@@ -18,4 +19,12 @@ export const tsup: Options = {
 			ignore: (path) => !(module.builtinModules.includes(path) || path.startsWith('node:'))
 		}),
 	],
-}
+};
+
+export const tsup: Options[] = [base, {
+	...base,
+	entryPoints: ['src/plugin.tailwindcss.ts'],
+}, {
+	...base,
+	...bin,
+}]

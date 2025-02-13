@@ -1,5 +1,6 @@
 import { CSColorScale, CSColor } from '../../../types';
-import { ColorHSV, ColorHSVA, ColorHEX, ColorRGBA, hsvaToHex, hsvaToRGBA } from '../color'
+import { ColorHSV, ColorHSVA, ColorHEX, ColorRGBA } from '../color/types'
+import { hsvaToHex, hsvaToRGBA } from '../color/utils'
 import { sampleComponentCurve } from '../component-curve'
 
 export function colorScaleTokens(color_scale:CSColorScale) {

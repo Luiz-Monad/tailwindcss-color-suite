@@ -30,6 +30,16 @@
 				"require": "./dist/index.js"
 			}
 		},
+		"./tailwindcss": {
+			"import": {
+				"types": "./dist/plugin.tailwindcss.d.mts",
+				"import": "./dist/plugin.tailwindcss.mjs"
+			},
+			"require": {
+				"types": "./dist/plugin.tailwindcss.d.ts",
+				"require": "./dist/plugin.tailwindcss.js"
+			}
+		},
 		"./app": {
 			"import": "./dist/app.main/index.mjs",
 			"require": "./dist/app.main/index.js"
@@ -45,7 +55,7 @@
 		"client.d.ts"
 	],
 	"scripts": {
-		"build": "vite build && tsup && tsup --config ./bin/tsup.config.ts",
+		"build": "vite build && tsup",
 		"dev": "vite",
 		"test": "jest",
 		"format": "npx -y eclint fix"
