@@ -108,7 +108,7 @@ class ColorConfigStoreClass {
 		const code = inspect(this.config_cache, false, Infinity)
 		await fs.writeFile(this.path,
 			ext === '.ts' || ext === '.mts' ?
-				`import type { ColorSuiteConfig } from 'tailwindcss-color-suite';\n\nexport default \n${code} satisfies ColorSuiteConfig;` :
+				`import { ThemeConfig } from 'tailwindcss/types/config';\n\nexport default \n${code} satisfies ThemeConfig['colors'];` :
 				ext === '.mjs' ?
 					`export default ${code}`
 					: `module.exports = ${code}`
