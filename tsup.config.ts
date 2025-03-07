@@ -10,7 +10,7 @@ const base: Options = {
 	minify: false,
 	cjsInterop: true,
 	format: ['cjs', 'esm'],
-	entryPoints: ['src/index.ts'],
+	entryPoints: ['src/index.ts', 'src/plugin.svelte.ts'],
 	noExternal: [
 		'tailwindcss/colors',
 	],
@@ -19,14 +19,14 @@ const base: Options = {
 			ignore: (path) => !(module.builtinModules.includes(path) || path.startsWith('node:'))
 		}),
 	],
+	esbuildOptions: (options) => {
+		options.chunkNames = 'library'
+	},
 };
 
 export const tsup: Options[] = [base, {
 	...base,
 	entryPoints: ['src/plugin.tailwindcss.ts'],
-}, {
-	...base,
-	entryPoints: ['src/plugin.svelte.ts'],
 }, {
 	...base,
 	...bin,

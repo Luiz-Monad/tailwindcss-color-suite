@@ -52,9 +52,9 @@ export default {
   preprocess: vitePreprocess(),
   extensions: ['.mjml.svelte', '.svelte'],
   kit: {
-    ...colorSuiteKitConfig(),
     adapter: adapter()
-  }
+  },
+  ...colorSuiteSvelteConfig(),
 };
 ```
 

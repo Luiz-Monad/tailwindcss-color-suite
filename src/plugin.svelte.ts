@@ -26,7 +26,7 @@ function resolve_entry(entry: string) {
 	return null;
 }
 
-export function colorSuiteSvelteKitConfig<Config extends Record<string, any>>(svelteKitConfig: Config): Config {
+export function colorSuiteSvelteConfig<Config extends Record<string, any>>(svelteKitConfig?: Config): Config {
 	const outDir = svelteKitConfig?.kit?.outDir ?? '.svelte-kit'
 	const currentHook = `${outDir}/generated/hooks.server.mjs`
 	const previousHook = svelteKitConfig?.kit?.files?.hooks?.server ?? 'src/hooks.server'
@@ -47,12 +47,12 @@ export function colorSuiteSvelteKitConfig<Config extends Record<string, any>>(sv
 		},
 		vitePlugin: {
 			plugins: [
-				colorSuiteSveltePlugin()
+				colorSuiteSvelteVitePlugin()
 			]
 		},
 	}
 
-	return mergeConfig(svelteKitConfig as any, overrides) as Config;
+	return mergeConfig(svelteKitConfig as any ?? {}, overrides) as Config;
 }
 
 function hookTransformIndexHtmlPlugin(): Plugin {
@@ -129,6 +129,6 @@ function hookTransformIndexHtmlPlugin(): Plugin {
 	};
 }
 
-export function colorSuiteSveltePlugin(options: Parameters<typeof colorSuitePlugin>[0] = {}): Plugin[] {
+export function colorSuiteSvelteVitePlugin(options: Parameters<typeof colorSuitePlugin>[0] = {}): Plugin[] {
 	return [colorSuitePlugin(options), hookTransformIndexHtmlPlugin()];
 }
