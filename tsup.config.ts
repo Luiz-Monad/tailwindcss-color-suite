@@ -26,5 +26,8 @@ export const tsup: Options[] = [base, {
 	entryPoints: ['src/plugin.tailwindcss.ts'],
 }, {
 	...base,
+	entryPoints: ['src/plugin.svelte.ts'],
+}, {
+	...base,
 	...bin,
 }]

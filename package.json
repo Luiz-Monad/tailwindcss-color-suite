@@ -40,6 +40,16 @@
 				"require": "./dist/plugin.tailwindcss.js"
 			}
 		},
+		"./svelte": {
+			"import": {
+				"types": "./dist/plugin.svelte.d.mts",
+				"import": "./dist/plugin.svelte.mjs"
+			},
+			"require": {
+				"types": "./dist/plugin.svelte.d.ts",
+				"require": "./dist/plugin.svelte.js"
+			}
+		},
 		"./app": {
 			"import": "./dist/app.main/index.mjs",
 			"require": "./dist/app.main/index.js"

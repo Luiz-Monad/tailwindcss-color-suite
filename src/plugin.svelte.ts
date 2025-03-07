@@ -26,11 +26,7 @@ function resolve_entry(entry: string) {
 	return null;
 }
 
-/**
- * @param {import('@sveltejs/kit').Config} [svelteKitConfig]
- * @returns {import('@sveltejs/kit').Config}
- */
-export function colorSuiteSvelteKitConfig(svelteKitConfig: any) {
+export function colorSuiteSvelteKitConfig<Config extends Record<string, any>>(svelteKitConfig: Config): Config {
 	const outDir = svelteKitConfig?.kit?.outDir ?? '.svelte-kit'
 	const currentHook = `${outDir}/generated/hooks.server.mjs`
 	const previousHook = svelteKitConfig?.kit?.files?.hooks?.server ?? 'src/hooks.server'
@@ -49,9 +45,14 @@ export function colorSuiteSvelteKitConfig(svelteKitConfig: any) {
 				}
 			}
 		},
+		vitePlugin: {
+			plugins: [
+				colorSuiteSveltePlugin()
+			]
+		},
 	}
 
-	return mergeConfig(svelteKitConfig, overrides);
+	return mergeConfig(svelteKitConfig as any, overrides) as Config;
 }
 
 function hookTransformIndexHtmlPlugin(): Plugin {

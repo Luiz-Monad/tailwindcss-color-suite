@@ -40,11 +40,29 @@ export default defineConfig({
 
 ```
 
+If you're using Svelte, then instead add Color Suite config to Svelte configuration:
+
+```js
+// svelte.config.js
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { colorSuiteKitConfig } from 'tailwindcss-color-suite/svelte'
+import adapter from '@sveltejs/adapter-static';
+
+export default {
+  preprocess: vitePreprocess(),
+  extensions: ['.mjml.svelte', '.svelte'],
+  kit: {
+    ...colorSuiteKitConfig(),
+    adapter: adapter()
+  }
+};
+```
+
 Finally, use the Color Suite configuration function in your Tailwind CSS config:
 
 ```js
 // tailwind.config.js
-const { tailwindColors } = require('tailwindcss-color-suite')
+const { tailwindColors } = require('tailwindcss-color-suite/tailwindcss')
 
 module.exports = {
   theme: {
@@ -52,6 +70,22 @@ module.exports = {
     ...
   }
 }
+```
+
+Another option support is using TS Tailwind config:
+
+```ts
+// tailwind.config.ts
+import type { Config } from 'tailwindcss';
+import { tailwindColors } from 'tailwindcss-color-suite/tailwindcss';
+import colors from './colors.config.ts';
+
+export default {
+  theme: {
+    colors: tailwindColors(colors),
+    ...
+  }
+} satisfies Config;
 ```
 
 ## Usage
