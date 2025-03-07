@@ -30,6 +30,7 @@ Add the Color Suite plugin to your Vite configuration:
 // vite.config.ts
 import { defineConfig } from 'vite'
 import { colorSuitePlugin } from 'tailwindcss-color-suite'
+// import { colorSuitePlugin } from 'tailwindcss-color-suite/svelte' // for svelte
 
 export default defineConfig({
   plugins: [

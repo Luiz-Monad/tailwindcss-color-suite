@@ -2,7 +2,7 @@ import type { Plugin } from 'vite'
 import { mergeConfig } from 'vite'
 import fs from 'fs'
 import path from 'path'
-import { colorSuitePlugin } from './plugin.vite'
+import { colorSuitePlugin as colorSuiteVitePlugin } from './plugin.vite'
 import { COLOR_SUITE_PATH, COLOR_CONFIG_ID, DEFAULT_COLOR_CONFIG, EDITOR_APP_MOUNT_ID, SETTINGS_CONFIG_ID, COLOR_SUITE_ID, RESOLVED_COLORS_ID, PREFIXED_COLOR_CONFIG_ID, PREFIXED_SETTINGS_CONFIG_ID, PREFIXED_RESOLVED_COLORS_ID, SETTINGS_UPDATED_EVENT } from './constants';
 
 // taken from /@sveltejs/kit/src/utils/filesystem.js
@@ -44,12 +44,7 @@ export function colorSuiteSvelteConfig<Config extends Record<string, any>>(svelt
 					server: currentHook
 				}
 			}
-		},
-		vitePlugin: {
-			plugins: [
-				colorSuiteSvelteVitePlugin()
-			]
-		},
+		}
 	}
 
 	return mergeConfig(svelteKitConfig as any ?? {}, overrides) as Config;
@@ -129,6 +124,6 @@ function hookTransformIndexHtmlPlugin(): Plugin {
 	};
 }
 
-export function colorSuiteSvelteVitePlugin(options: Parameters<typeof colorSuitePlugin>[0] = {}): Plugin[] {
-	return [colorSuitePlugin(options), hookTransformIndexHtmlPlugin()];
+export function colorSuitePlugin(options: Parameters<typeof colorSuiteVitePlugin>[0] = {}): Plugin[] {
+	return [colorSuiteVitePlugin(options), hookTransformIndexHtmlPlugin()];
 }
