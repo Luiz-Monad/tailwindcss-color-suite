@@ -29,8 +29,8 @@ Add the Color Suite plugin to your Vite configuration:
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite'
-import { colorSuitePlugin } from 'tailwindcss-color-suite'
-// import { colorSuitePlugin } from 'tailwindcss-color-suite/svelte' // for svelte
+// import { colorSuitePlugin } from 'tailwindcss-color-suite' // for other frameworks
+import { colorSuitePlugin } from 'tailwindcss-color-suite/svelte' // for svelte
 
 export default defineConfig({
   plugins: [
@@ -41,7 +41,7 @@ export default defineConfig({
 
 ```
 
-If you're using Svelte, then instead add Color Suite config to Svelte configuration:
+If you're using Svelte, then also add Color Suite config to Svelte configuration:
 
 ```js
 // svelte.config.js
@@ -49,14 +49,28 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { colorSuiteKitConfig } from 'tailwindcss-color-suite/svelte'
 import adapter from '@sveltejs/adapter-static';
 
-export default {
+export default colorSuiteSvelteConfig({
   preprocess: vitePreprocess(),
   extensions: ['.mjml.svelte', '.svelte'],
   kit: {
     adapter: adapter()
   },
-  ...colorSuiteSvelteConfig(),
-};
+});
+```
+
+Another option is using the Svelte Color Suite http handler directly, it is required to change the HTML.
+
+```js
+// hooks.server.ts
+import { sequence } from '@sveltejs/kit/hooks';
+import { colorSuiteHandler } from 'tailwindcss-color-suite/svelte'
+
+const userHandler: Handle = async ({ event, resolve }) => {
+  // ...
+}
+
+export const handle = sequence(userHandler, colorSuiteHandler);
+
 ```
 
 Finally, use the Color Suite configuration function in your Tailwind CSS config:

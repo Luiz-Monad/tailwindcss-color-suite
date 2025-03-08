@@ -28,10 +28,10 @@ function resolve_entry(entry: string) {
 
 export function colorSuiteSvelteConfig<Config extends Record<string, any>>(svelteKitConfig?: Config): Config {
 	const outDir = svelteKitConfig?.kit?.outDir ?? '.svelte-kit'
-	const currentHook = `${outDir}/generated/hooks.server.mjs`
+	const currentHook = `${outDir}/generated/colorsuite-hook.server.mjs`
 	const previousHook = svelteKitConfig?.kit?.files?.hooks?.server ?? 'src/hooks.server'
 
-	globalThis.__hook_hooks = {
+	globalThis.__colorSuiteHook = {
 		currentHook,
 		previousHook,
 	}
@@ -50,18 +50,18 @@ export function colorSuiteSvelteConfig<Config extends Record<string, any>>(svelt
 	return mergeConfig(svelteKitConfig as any ?? {}, overrides) as Config;
 }
 
-function hookTransformIndexHtmlPlugin(): Plugin {
+function hookServerHookPlugin(): Plugin {
 	let is_build: boolean
 	let currentHook: string
 	let previousHook: string | null
 	return {
-		name: 'hook-sveltekit-transformIndexHtml',
+		name: 'hook-sveltekit-colorsuite',
 		enforce: 'pre',
 
 		config(config, config_env) {
-			const hookConfig = (globalThis as any).__hook_hooks
+			const hookConfig = (globalThis as any).__colorSuiteHook
 			if (!hookConfig) {
-				throw new Error(`[Color Suite] Hook weren't hooked. Did you forget to add colorSuiteSvelteKitConfig to svelte.config.js ?`)
+				throw new Error(`[Color Suite] Hook weren't hooked. Did you forget to add colorSuiteSvelteConfig to svelte.config.js ?`)
 			}
 
 			is_build = config_env.command === 'build'
@@ -86,30 +86,18 @@ function hookTransformIndexHtmlPlugin(): Plugin {
 
 		configureServer(server) {
 
-			const handler =
-				`async ({ event, resolve }) => await resolve(event, {
-					transformPageChunk: async ({ html }) => {
-						const head = '<script type="module" src="${COLOR_SUITE_PATH}"></script>'
-						const body = '<div id="${EDITOR_APP_MOUNT_ID}"></div>'
-						return html
-							.replace('</head>', head + '</head>')
-							.replace(/<body(.*?)>/, (match, attributes) => '<body' + attributes + '>' + body);
-					},
-				});
-				`
-
 			let combinedHooksContent
 			if (previousHook) {
 				combinedHooksContent = `
 					import { sequence } from '@sveltejs/kit/hooks';
 					import * as userHooks from ${JSON.stringify(previousHook)};
-					const customHandle = ${handler}
-					export const handle = sequence(customHandle, userHooks.handle);
+					import { colorSuiteHandler } from 'tailwindcss-color-suite/svelte';
+					export const handle = sequence(colorSuiteHandler, userHooks.handle);
 					export default { ...userHooks, handle };
 				`
 			} else {
 				combinedHooksContent = `
-					export const handle = ${handler}
+					export * from 'tailwindcss-color-suite/svelte';
 				`;
 			}
 			combinedHooksContent = `
@@ -124,6 +112,18 @@ function hookTransformIndexHtmlPlugin(): Plugin {
 	};
 }
 
+export async function colorSuiteHandler ({ event, resolve }) {
+	return await resolve(event, {
+	transformPageChunk: async ({ html }) => {
+		const head = `<script type="module" src="${COLOR_SUITE_PATH}"></script>`
+		const body = `<div id="${EDITOR_APP_MOUNT_ID}"></div>`
+		return html
+			.replace('</head>', head + '</head>')
+			.replace(/<body(.*?)>/, (match, attributes) => '<body' + attributes + '>' + body);
+	},
+});
+}
+
 export function colorSuitePlugin(options: Parameters<typeof colorSuiteVitePlugin>[0] = {}): Plugin[] {
-	return [colorSuiteVitePlugin(options), hookTransformIndexHtmlPlugin()];
+	return [colorSuiteVitePlugin(options), hookServerHookPlugin()];
 }
