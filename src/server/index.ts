@@ -9,7 +9,7 @@ import { COLOR_CREATE_PATH, SETTINGS_UPDATE_PATH, COLOR_CONFIG_ID, SETTINGS_CONF
 import { CreateColorForm } from '../editor/services/color'
 import { UpdateSettingsForm } from '../editor/services/settings'
 import { UpdateColorForm } from '../editor/services/color/forms';
-import { ColorConfigStore } from '../config'
+import { ConfigStore } from '../config'
 
 const bodyParser = body_parser.json()
 const parseBody = <T = { [key: string]: any }>(req: Connect.IncomingMessage, res: ServerResponse): Promise<T> => new Promise((resolve, reject) => {
@@ -23,7 +23,7 @@ const parseBody = <T = { [key: string]: any }>(req: Connect.IncomingMessage, res
 	return (req as any).body
 })
 
-export function createColorSuiteServer(server: ViteDevServer, color_config_store: (() => Promise<ColorConfigStore>)) {
+export function createColorSuiteServer(server: ViteDevServer, color_config_store: (() => Promise<ConfigStore<ColorSuiteConfig>>)) {
 	const color_config_promise = async () => await (await color_config_store()).read()
 	const save_color_config_promise = async () => await (await color_config_store()).write()
 

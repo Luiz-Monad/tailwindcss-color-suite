@@ -2,8 +2,8 @@
 
 import { existsSync } from 'fs'
 import chalk from 'chalk'
-import { createConfigStore, configToTailwindColors } from '../dist/index.mjs'
-type ColorSuiteConfig = Parameters<typeof configToTailwindColors>[0]
+import { createConfigStore, createColorStore, type ColorSuiteConfig } from '../dist/index.mjs'
+import { configToTailwindColors } from '../dist/plugin.tailwindcss.mjs'
 
 const PREFIX = '[Color Suite]'
 function logInfo(...args) {
@@ -22,7 +22,7 @@ function logErrorAndExit(...args) {
 
 async function main() {
 	const color_config_store = await createConfigStore()
-	const tailwind_config_store = await createConfigStore('tailwindcss.colors.config')
+	const tailwind_config_store = await createColorStore()
 
 	logInfo(`${PREFIX} Attempting to export the color config file at '${color_config_store.path}'.`)
 
@@ -42,7 +42,7 @@ async function main() {
 
 	try {
 		let color_object = configToTailwindColors(color_config!, true)
-		tailwind_config_store.store(color_object as unknown as ColorSuiteConfig)
+		tailwind_config_store.store(color_object)
 		await tailwind_config_store.write()
 	} catch(e: any) {
 		logError(`${PREFIX} ${e.message}`)

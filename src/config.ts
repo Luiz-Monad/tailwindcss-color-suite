@@ -1,15 +1,15 @@
-import { ColorSuiteConfig } from './types'
+import { ColorSuiteConfig, TailwindColors } from './types'
 import { bundleRequire, JS_EXT_RE } from 'bundle-require'
 import { promises as fs } from 'fs'
 import { basename, dirname, extname, resolve } from 'path'
 import { inspect } from 'util'
 import { dehydrateColorConfig } from './editor/lib/utils.color-suite'
 
-export interface ColorConfigStore {
+export interface ConfigStore<T> {
 	path: string
-	read(nocache?: boolean): Promise<ColorSuiteConfig>
+	read(nocache?: boolean): Promise<T>
 	write(): Promise<void>
-	store(config: ColorSuiteConfig): Promise<void>
+	store(config: T): Promise<void>
 	match(path: string): boolean
 }
 
@@ -62,37 +62,40 @@ function matchFileName(path: string, modPath: string, patterns: RegExp = JS_EXT_
 		patterns.test(modPath)
 }
 
-class ColorConfigStoreClass {
-	private static instance: Map<string, ColorConfigStore> | null = null
-
-	private config_cache: ColorSuiteConfig | null = null
-
-	public path: string
+class ConfigStoreFactory {
+	private static instance: Map<string, ConfigStoreBase> | null = null
 
 	private constructor() { }
 
-	public static async getInstance(userDefinedPath?: string): Promise<ColorConfigStore> {
-		const key = userDefinedPath ?? '<default>'
-		if (!ColorConfigStoreClass.instance) {
-			ColorConfigStoreClass.instance = new Map()
+	public static async getInstance<T>(create: () => ConfigStoreBase<T>, configPath: string): Promise<ConfigStoreBase<T>> {
+		if (!ConfigStoreFactory.instance) {
+			ConfigStoreFactory.instance = new Map()
 		}
-		if (!ColorConfigStoreClass.instance.has(key)) {
-			const instance = new ColorConfigStoreClass()
-			await instance.set_path(userDefinedPath)
-			ColorConfigStoreClass.instance.set(key, instance)
+		if (!ConfigStoreFactory.instance.has(configPath)) {
+			const instance = create()
+			await instance.set_path(configPath)
+			ConfigStoreFactory.instance.set(configPath, instance)
 		}
-		return ColorConfigStoreClass.instance.get(key)!
+		return ConfigStoreFactory.instance.get(configPath)!
 	}
 
-	private async set_path(userDefinedPath?: string): Promise<void> {
-		this.path = !userDefinedPath
-			? await guessFileName(process.cwd(), 'colors.config')
-			: await guessFileName(process.cwd(), userDefinedPath)
+}
+
+class ConfigStoreBase<T = any> {
+
+	protected constructor() { }
+
+	protected config_cache: T | null = null
+
+	public path: string
+
+	public async set_path(configPath: string): Promise<void> {
+		this.path = await guessFileName(process.cwd(), configPath)
 		if (!this.path) throw new Error('Cannot determine config path')
 		this.path = resolve(this.path)
 	}
 
-	public async read(nocache?: boolean): Promise<ColorSuiteConfig> {
+	public async read(nocache?: boolean): Promise<T> {
 		if (!this.config_cache || nocache) {
 			this.config_cache = await dynamicRequire(this.path)
 		}
@@ -102,28 +105,62 @@ class ColorConfigStoreClass {
 
 	public async write(): Promise<void> {
 		const ext = extname(this.path)
-		if (this.config_cache?.colors) {
-			dehydrateColorConfig(this.config_cache?.colors)
-		}
 		const code = inspect(this.config_cache, false, Infinity)
 		await fs.writeFile(this.path,
 			ext === '.ts' || ext === '.mts' ?
-				`import { ThemeConfig } from 'tailwindcss/types/config';\n\nexport default \n${code} satisfies ThemeConfig['colors'];` :
+				this.template(code) :
 				ext === '.mjs' ?
 					`export default ${code}`
 					: `module.exports = ${code}`
 		)
 	}
 
-	public async store(config: ColorSuiteConfig): Promise<void> {
+	public async store(config: T): Promise<void> {
 		this.config_cache = config
 	}
 
 	public match(path: string): boolean {
 		return matchFileName(this.path, resolve(path))
 	}
+
+	protected template(code: string) {
+		return code;
+	}
 }
 
-export async function createConfigStore(userDefinedPath?: string): Promise<ColorConfigStore> {
-	return await ColorConfigStoreClass.getInstance(userDefinedPath)
+class ColorSuiteConfigStoreClass extends ConfigStoreBase<ColorSuiteConfig> {
+
+	public static async getInstance(configPath: string): Promise<ConfigStore<ColorSuiteConfig>> {
+		return await ConfigStoreFactory.getInstance(() => new ColorSuiteConfigStoreClass(), configPath)
+	}
+
+	protected template(code: string) {
+		return `import type { ColorSuiteConfig } from 'tailwindcss-color-suite';\n\nexport default \n${code} satisfies ColorSuiteConfig;`
+	}
+
+	public async write(): Promise<void> {
+		if (this.config_cache?.colors) {
+			dehydrateColorConfig(this.config_cache?.colors)
+		}
+		await super.write();
+	}
+}
+
+export async function createConfigStore(userDefinedPath = 'colors.config'): Promise<ConfigStore<ColorSuiteConfig>> {
+	return await ColorSuiteConfigStoreClass.getInstance(userDefinedPath)
+}
+
+class TailwindColorsStoreClass extends ConfigStoreBase<TailwindColors> {
+
+	public static async getInstance(configPath: string): Promise<ConfigStore<TailwindColors>> {
+		return await ConfigStoreFactory.getInstance(() => new TailwindColorsStoreClass(), configPath)
+	}
+
+	protected template(code: string) {
+		return `import { ThemeConfig } from 'tailwindcss/types/config';\n\nexport default \n${code} satisfies ThemeConfig['colors'];`
+	}
+}
+
+export async function createColorStore(userDefinedPath = 'tailwindcss.colors.config'): Promise<ConfigStore<TailwindColors>> {
+	return await TailwindColorsStoreClass.getInstance(userDefinedPath)
 }
